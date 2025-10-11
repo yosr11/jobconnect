@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { UserPlus, Mail, Lock, Phone, User, AlertCircle, CheckCircle } from "lucide-react";
+import { UserPlus, Mail, Lock, Phone, User, AlertCircle, CheckCircle, Upload, FileText } from "lucide-react";
 import api from "../services/axiosConfig.js";
 
 const RegisterCandidat = () => {
@@ -10,7 +10,11 @@ const RegisterCandidat = () => {
     num_tel: "",
     mot_de_passe: "",
     confirmer_mot_de_passe: "",
+    date_naissance: "",
+    competences: "",
+    adresse: "",
   });
+  const [cvFile, setCvFile] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -18,16 +22,37 @@ const RegisterCandidat = () => {
   const validate = () => {
     const { nom, prenom, email, num_tel, mot_de_passe, confirmer_mot_de_passe } = form;
     if (!nom || !prenom || !email || !num_tel || !mot_de_passe || !confirmer_mot_de_passe)
-      return "Veuillez remplir tous les champs.";
+      return "Veuillez remplir tous les champs obligatoires.";
     if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email))
       return "Adresse email invalide.";
     if (!/^\d{8}$/.test(num_tel))
-      return "Le numéro de téléphone doit contenir 8 chiffres.";
+      return "Le numéro de téléphone doit contenir exactement 8 chiffres.";
     if (mot_de_passe.length < 6)
       return "Mot de passe trop court (6 caractères minimum).";
     if (mot_de_passe !== confirmer_mot_de_passe)
       return "Les mots de passe ne correspondent pas.";
     return "";
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Vérifier le type de fichier
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        setError("Seuls les fichiers PDF, DOC et DOCX sont autorisés pour le CV.");
+        return;
+      }
+      
+      // Vérifier la taille (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Le fichier CV ne doit pas dépasser 5MB.");
+        return;
+      }
+      
+      setCvFile(file);
+      setError(""); // Effacer les erreurs précédentes
+    }
   };
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -46,7 +71,27 @@ const RegisterCandidat = () => {
     }
 
     try {
-      const { data } = await api.post("/candidat/register", form);
+      // Créer FormData pour l'envoi du fichier
+      const formData = new FormData();
+      
+      // Ajouter tous les champs du formulaire
+      Object.keys(form).forEach(key => {
+        if (form[key]) {
+          formData.append(key, form[key]);
+        }
+      });
+      
+      // Ajouter le fichier CV s'il existe
+      if (cvFile) {
+        formData.append('cv', cvFile);
+      }
+
+      const { data } = await api.post("/candidat/register", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
       setMessage(data?.message || "Inscription réussie !");
       setForm({
         nom: "",
@@ -55,12 +100,21 @@ const RegisterCandidat = () => {
         num_tel: "",
         mot_de_passe: "",
         confirmer_mot_de_passe: "",
+        date_naissance: "",
+        competences: "",
+        adresse: "",
       });
+      setCvFile(null);
+      
+      // Réinitialiser le champ file
+      const fileInput = document.getElementById('cv-upload');
+      if (fileInput) fileInput.value = '';
+      
     } catch (err) {
       setError(
         err?.response?.data?.message ||
           err?.message ||
-          "Erreur serveur lors de l’inscription"
+          "Erreur serveur lors de l'inscription"
       );
     } finally {
       setIsLoading(false);
@@ -193,6 +247,86 @@ const RegisterCandidat = () => {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Date de naissance */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700">
+                Date de naissance (optionnel)
+              </label>
+              <input
+                type="date"
+                name="date_naissance"
+                value={form.date_naissance}
+                onChange={onChange}
+                className="w-full border-2 border-gray-200 rounded-xl py-3 px-4 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+              />
+            </div>
+
+            {/* Adresse */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700">
+                Adresse (optionnel)
+              </label>
+              <input
+                type="text"
+                name="adresse"
+                value={form.adresse}
+                onChange={onChange}
+                placeholder="Votre adresse complète"
+                className="w-full border-2 border-gray-200 rounded-xl py-3 px-4 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+              />
+            </div>
+
+            {/* Compétences */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700">
+                Compétences (optionnel)
+              </label>
+              <textarea
+                name="competences"
+                value={form.competences}
+                onChange={onChange}
+                placeholder="Décrivez vos compétences et expériences..."
+                rows="3"
+                className="w-full border-2 border-gray-200 rounded-xl py-3 px-4 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
+              />
+            </div>
+
+            {/* Upload CV */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                CV (optionnel)
+              </label>
+              <div className="relative">
+                <input
+                  id="cv-upload"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="cv-upload"
+                  className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-xl py-4 px-4 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all"
+                >
+                  <Upload className="w-5 h-5 text-gray-400" />
+                  <span className="text-sm text-gray-600">
+                    {cvFile ? cvFile.name : "Cliquez pour télécharger votre CV (PDF, DOC, DOCX)"}
+                  </span>
+                </label>
+              </div>
+              {cvFile && (
+                <div className="flex items-center gap-2 mt-2 p-2 bg-green-50 rounded-lg">
+                  <FileText className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-700">
+                    Fichier sélectionné: {cvFile.name}
+                  </span>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Formats acceptés: PDF, DOC, DOCX (max 5MB)
+              </p>
             </div>
 
             {/* Messages */}
