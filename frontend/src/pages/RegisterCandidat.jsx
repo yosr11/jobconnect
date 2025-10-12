@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { UserPlus, Mail, Lock, Phone, User, AlertCircle, CheckCircle, Upload, FileText } from "lucide-react";
+import { UserPlus, Mail, Lock, Phone, User, AlertCircle, CheckCircle, Upload, FileText, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/axiosConfig.js";
 
 const RegisterCandidat = () => {
@@ -18,6 +19,8 @@ const RegisterCandidat = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const validate = () => {
     const { nom, prenom, email, num_tel, mot_de_passe, confirmer_mot_de_passe } = form;
@@ -55,7 +58,13 @@ const RegisterCandidat = () => {
     }
   };
 
-  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const onChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    // Effacer les messages d'erreur quand l'utilisateur commence à taper
+    if (error) {
+      setError("");
+    }
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -71,6 +80,8 @@ const RegisterCandidat = () => {
     }
 
     try {
+      console.log("🔄 Inscription du candidat:", form);
+      
       // Créer FormData pour l'envoi du fichier
       const formData = new FormData();
       
@@ -84,6 +95,7 @@ const RegisterCandidat = () => {
       // Ajouter le fichier CV s'il existe
       if (cvFile) {
         formData.append('cv', cvFile);
+        console.log("📎 Fichier CV ajouté:", cvFile.name);
       }
 
       const { data } = await api.post("/candidat/register", formData, {
@@ -92,25 +104,40 @@ const RegisterCandidat = () => {
         },
       });
       
-      setMessage(data?.message || "Inscription réussie !");
-      setForm({
-        nom: "",
-        prenom: "",
-        email: "",
-        num_tel: "",
-        mot_de_passe: "",
-        confirmer_mot_de_passe: "",
-        date_naissance: "",
-        competences: "",
-        adresse: "",
-      });
-      setCvFile(null);
+      console.log("📡 Réponse API inscription candidat:", data);
       
-      // Réinitialiser le champ file
-      const fileInput = document.getElementById('cv-upload');
-      if (fileInput) fileInput.value = '';
+      if (data.success) {
+        setMessage(data.message || "Inscription réussie !");
+        setForm({
+          nom: "",
+          prenom: "",
+          email: "",
+          num_tel: "",
+          mot_de_passe: "",
+          confirmer_mot_de_passe: "",
+          date_naissance: "",
+          competences: "",
+          adresse: "",
+        });
+        setCvFile(null);
+        
+        // Réinitialiser le champ file
+        const fileInput = document.getElementById('cv-upload');
+        if (fileInput) fileInput.value = '';
+        
+        console.log("✅ Candidat inscrit avec succès");
+        
+        // Effacer les messages après 5 secondes
+        setTimeout(() => {
+          setMessage("");
+        }, 5000);
+      } else {
+        console.error("❌ Erreur dans la réponse:", data.message);
+        setError(data.message || "Erreur lors de l'inscription");
+      }
       
     } catch (err) {
+      console.error("❌ Erreur lors de l'inscription:", err);
       setError(
         err?.response?.data?.message ||
           err?.message ||
@@ -381,9 +408,21 @@ const RegisterCandidat = () => {
             <button
               type="button"
               className="text-blue-600 hover:text-blue-700 font-semibold"
-              onClick={() => (window.location.href = "/login")}
+              onClick={() => navigate("/login")}
             >
               Se connecter
+            </button>
+          </div>
+
+          {/* Bouton Retour à l'accueil */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-xl transition-all duration-200 font-medium"
+            >
+              <Home className="w-4 h-4" />
+              Retour à l'accueil
             </button>
           </div>
         </div>

@@ -37,6 +37,11 @@ const recruteurSchema = new mongoose.Schema(
       type: String,
       default: "recruteur" ,
     },
+    entreprise: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Entreprise",
+      required: true,
+    },
   },
   { timestamps: true }
 );

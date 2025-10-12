@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Mail, Lock, User, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, AlertCircle, CheckCircle, Eye, EyeOff, Home, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -35,10 +35,14 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const url =
-        role === "candidat"
-          ? "http://localhost:5000/api/candidat/login"
-          : "http://localhost:5000/api/recruteur/login";
+      let url;
+      if (role === "candidat") {
+        url = "http://localhost:5000/api/candidat/login";
+      } else if (role === "recruteur") {
+        url = "http://localhost:5000/api/recruteur/login";
+      } else if (role === "admin") {
+        url = "http://localhost:5000/api/admin/login";
+      }
 
       const response = await axios.post(url, {
         email,
@@ -46,16 +50,21 @@ const Login = () => {
       });
 
       console.log("Login response:", response.data);
-      const connectedUser = response.data.user || response.data.candidat || response.data;
+      const connectedUser = response.data.user || response.data.candidat || response.data.admin || response.data;
 
       setMessage(response.data.message || "Connexion réussie !");
-      sessionStorage.setItem("user", JSON.stringify(connectedUser));
-
-      const roleFromServer = connectedUser?.role || role;
-      if (roleFromServer === "candidat") {
-        navigate("/dashboard-candidat");
+      
+      if (role === "admin") {
+        sessionStorage.setItem("admin", JSON.stringify(connectedUser));
+        navigate("/dashboard-admin");
       } else {
-        navigate("/dashboard-recruteur");
+        sessionStorage.setItem("user", JSON.stringify(connectedUser));
+        const roleFromServer = connectedUser?.role || role;
+        if (roleFromServer === "candidat") {
+          navigate("/dashboard-candidat");
+        } else {
+          navigate("/dashboard-recruteur");
+        }
       }
     } catch (error) {
       console.error("Login error:", error?.response?.data ?? error);
@@ -91,11 +100,11 @@ const Login = () => {
             {/* Sélection du rôle */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700">Vous êtes</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setRole("candidat")}
-                  className={`py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
+                  className={`py-3 px-3 rounded-xl font-medium transition-all duration-200 text-sm ${
                     role === "candidat"
                       ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -106,7 +115,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setRole("recruteur")}
-                  className={`py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
+                  className={`py-3 px-3 rounded-xl font-medium transition-all duration-200 text-sm ${
                     role === "recruteur"
                       ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -114,19 +123,33 @@ const Login = () => {
                 >
                   Recruteur
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("admin")}
+                  className={`py-3 px-3 rounded-xl font-medium transition-all duration-200 text-sm flex items-center justify-center gap-1 ${
+                    role === "admin"
+                      ? "bg-gradient-to-r from-red-500 to-orange-600 text-white shadow-lg shadow-red-500/30"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  <Shield className="w-3 h-3" />
+                  Admin
+                </button>
               </div>
             </div>
 
             {/* Email */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Adresse email</label>
+              <label className="block text-sm font-semibold text-gray-700">
+                Adresse email {role === "admin" && "(admin)"}
+              </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nom@exemple.com"
+                  placeholder={role === "admin" ? "admin@jobconnect.com" : "nom@exemple.com"}
                   required
                   className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 ${
                     emailError ? "border-red-500" : "border-gray-200"
@@ -138,7 +161,9 @@ const Login = () => {
 
             {/* Mot de passe avec œil */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">Mot de passe</label>
+              <label className="block text-sm font-semibold text-gray-700">
+                Mot de passe {role === "admin" && "(admin)"}
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -197,6 +222,18 @@ const Login = () => {
               onClick={() => navigate("/register")}
             >
               S'inscrire
+            </button>
+          </div>
+
+          {/* Bouton Retour à l'accueil */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-xl transition-all duration-200 font-medium"
+            >
+              <Home className="w-4 h-4" />
+              Retour à l'accueil
             </button>
           </div>
         </div>

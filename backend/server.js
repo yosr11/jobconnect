@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import candidatRoutes from "./routes/candidatRoutes.js";
 import recruteurRoutes from "./routes/recruteurRoutes.js";
+import entrepriseRoutes from "./routes/entrepriseRoutes.js";
 import { initializeDefaultAdmin } from "./initAdmin.js";
 
 dotenv.config();
@@ -21,6 +22,7 @@ initializeDefaultAdmin().catch((e) => console.error(e));
 app.use("/api/admin", adminRoutes);
 app.use("/api/candidat", candidatRoutes);
 app.use("/api/recruteur", recruteurRoutes);
+app.use("/api/entreprises", entrepriseRoutes);
 
 app.get("/", (req, res) => res.send("API Recrutement intelligente fonctionne !"));
 
