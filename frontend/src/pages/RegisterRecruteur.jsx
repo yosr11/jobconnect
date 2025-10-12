@@ -313,6 +313,14 @@ export default function RegisterRecruteur() {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-8 relative overflow-hidden">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-40"
+        style={{
+          backgroundImage: 'url(recrutement.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      ></div>
       <div className="absolute inset-0 bg-blue-900 opacity-40"></div>
       <div className="absolute top-0 left-0 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
       <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
