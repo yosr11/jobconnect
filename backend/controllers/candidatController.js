@@ -13,8 +13,9 @@ export const loginCandidat = async (req, res) => {
       return res.status(404).json({ message: "candidat non trouvé" });
     }
 
-    // Vérification mot de passe en clair
-    if (candidat.mot_de_passe !== mot_de_passe) {
+    // Vérification du mot de passe avec bcrypt
+    const isPasswordValid = await bcrypt.compare(mot_de_passe, candidat.mot_de_passe);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: "Mot de passe incorrect" });
     }
 
@@ -44,20 +45,68 @@ export const registerCandidat = async (req, res) => {
       mot_de_passe,
       confirmer_mot_de_passe,
       date_naissance,
-      cv,
       competences,
       adresse,
     } = req.body;
 
-    const existing = await Candidat.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ success: false, message: "Email déjà utilisé" });
+    // Validation des champs requis
+    if (!nom || !prenom || !email || !num_tel || !mot_de_passe || !confirmer_mot_de_passe) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Tous les champs obligatoires doivent être remplis" 
+      });
     }
 
+    // Validation de l'email
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Format d'email invalide" 
+      });
+    }
+
+    // Validation du numéro de téléphone
+    if (!/^\d{8}$/.test(num_tel)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Le numéro de téléphone doit contenir exactement 8 chiffres" 
+      });
+    }
+
+    // Validation des mots de passe
+    if (mot_de_passe.length < 6) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Le mot de passe doit contenir au moins 6 caractères" 
+      });
+    }
+
+    if (mot_de_passe !== confirmer_mot_de_passe) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Les mots de passe ne correspondent pas" 
+      });
+    }
+
+    // Vérifier si l'email existe déjà
+    const existing = await Candidat.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Un compte avec cet email existe déjà" 
+      });
+    }
+
+    // Récupérer le chemin du fichier CV uploadé
+    const cvPath = req.file ? req.file.path : null;
+
+    // Hasher les mots de passe
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(mot_de_passe, salt);
     const hashedConfirm = await bcrypt.hash(confirmer_mot_de_passe, salt);
 
+    // Créer le candidat
     const candidat = await Candidat.create({
       nom,
       prenom,
@@ -66,11 +115,12 @@ export const registerCandidat = async (req, res) => {
       mot_de_passe: hashedPassword,
       confirmer_mot_de_passe: hashedConfirm,
       date_naissance,
-      cv,
+      cv: cvPath,
       competences,
       adresse,
     });
 
+    // Générer le token JWT
     const token = jwt.sign(
       { id: candidat._id, role: candidat.role, email: candidat.email },
       process.env.JWT_SECRET || "dev_secret",
@@ -84,11 +134,17 @@ export const registerCandidat = async (req, res) => {
       user: {
         id: candidat._id,
         nom: candidat.nom,
+        prenom: candidat.prenom,
         email: candidat.email,
         role: candidat.role,
       },
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Erreur serveur", error: error.message });
+    console.error("Erreur lors de l'inscription:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Erreur serveur lors de la création du compte", 
+      error: error.message 
+    });
   }
 };

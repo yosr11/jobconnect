@@ -13,8 +13,9 @@ export const loginAdmin = async (req, res) => {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
-    // Vérification mot de passe en clair
-    if (admin.mot_de_passe !== mot_de_passe) {
+    // Vérification mot de passe avec bcrypt
+    const isPasswordValid = await bcrypt.compare(mot_de_passe, admin.mot_de_passe);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: "Mot de passe incorrect" });
     }
 

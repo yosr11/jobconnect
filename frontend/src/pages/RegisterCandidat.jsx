@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { UserPlus, Mail, Lock, Phone, User, AlertCircle, CheckCircle } from "lucide-react";
+import { UserPlus, Mail, Lock, Phone, User, AlertCircle, CheckCircle, Upload, FileText, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/axiosConfig.js";
 
 const RegisterCandidat = () => {
@@ -10,19 +11,25 @@ const RegisterCandidat = () => {
     num_tel: "",
     mot_de_passe: "",
     confirmer_mot_de_passe: "",
+    date_naissance: "",
+    competences: "",
+    adresse: "",
   });
+  const [cvFile, setCvFile] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const navigate = useNavigate();
+
   const validate = () => {
     const { nom, prenom, email, num_tel, mot_de_passe, confirmer_mot_de_passe } = form;
     if (!nom || !prenom || !email || !num_tel || !mot_de_passe || !confirmer_mot_de_passe)
-      return "Veuillez remplir tous les champs.";
+      return "Veuillez remplir tous les champs obligatoires.";
     if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email))
       return "Adresse email invalide.";
     if (!/^\d{8}$/.test(num_tel))
-      return "Le numéro de téléphone doit contenir 8 chiffres.";
+      return "Le numéro de téléphone doit contenir exactement 8 chiffres.";
     if (mot_de_passe.length < 6)
       return "Mot de passe trop court (6 caractères minimum).";
     if (mot_de_passe !== confirmer_mot_de_passe)
@@ -30,7 +37,34 @@ const RegisterCandidat = () => {
     return "";
   };
 
-  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Vérifier le type de fichier
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        setError("Seuls les fichiers PDF, DOC et DOCX sont autorisés pour le CV.");
+        return;
+      }
+      
+      // Vérifier la taille (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Le fichier CV ne doit pas dépasser 5MB.");
+        return;
+      }
+      
+      setCvFile(file);
+      setError(""); // Effacer les erreurs précédentes
+    }
+  };
+
+  const onChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    // Effacer les messages d'erreur quand l'utilisateur commence à taper
+    if (error) {
+      setError("");
+    }
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -46,21 +80,68 @@ const RegisterCandidat = () => {
     }
 
     try {
-      const { data } = await api.post("/candidat/register", form);
-      setMessage(data?.message || "Inscription réussie !");
-      setForm({
-        nom: "",
-        prenom: "",
-        email: "",
-        num_tel: "",
-        mot_de_passe: "",
-        confirmer_mot_de_passe: "",
+      console.log("🔄 Inscription du candidat:", form);
+      
+      // Créer FormData pour l'envoi du fichier
+      const formData = new FormData();
+      
+      // Ajouter tous les champs du formulaire
+      Object.keys(form).forEach(key => {
+        if (form[key]) {
+          formData.append(key, form[key]);
+        }
       });
+      
+      // Ajouter le fichier CV s'il existe
+      if (cvFile) {
+        formData.append('cv', cvFile);
+        console.log("📎 Fichier CV ajouté:", cvFile.name);
+      }
+
+      const { data } = await api.post("/candidat/register", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      console.log("📡 Réponse API inscription candidat:", data);
+      
+      if (data.success) {
+        setMessage(data.message || "Inscription réussie !");
+        setForm({
+          nom: "",
+          prenom: "",
+          email: "",
+          num_tel: "",
+          mot_de_passe: "",
+          confirmer_mot_de_passe: "",
+          date_naissance: "",
+          competences: "",
+          adresse: "",
+        });
+        setCvFile(null);
+        
+        // Réinitialiser le champ file
+        const fileInput = document.getElementById('cv-upload');
+        if (fileInput) fileInput.value = '';
+        
+        console.log("✅ Candidat inscrit avec succès");
+        
+        // Effacer les messages après 5 secondes
+        setTimeout(() => {
+          setMessage("");
+        }, 5000);
+      } else {
+        console.error("❌ Erreur dans la réponse:", data.message);
+        setError(data.message || "Erreur lors de l'inscription");
+      }
+      
     } catch (err) {
+      console.error("❌ Erreur lors de l'inscription:", err);
       setError(
         err?.response?.data?.message ||
           err?.message ||
-          "Erreur serveur lors de l’inscription"
+          "Erreur serveur lors de l'inscription"
       );
     } finally {
       setIsLoading(false);
@@ -195,6 +276,86 @@ const RegisterCandidat = () => {
               </div>
             </div>
 
+            {/* Date de naissance */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700">
+                Date de naissance (optionnel)
+              </label>
+              <input
+                type="date"
+                name="date_naissance"
+                value={form.date_naissance}
+                onChange={onChange}
+                className="w-full border-2 border-gray-200 rounded-xl py-3 px-4 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+              />
+            </div>
+
+            {/* Adresse */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700">
+                Adresse (optionnel)
+              </label>
+              <input
+                type="text"
+                name="adresse"
+                value={form.adresse}
+                onChange={onChange}
+                placeholder="Votre adresse complète"
+                className="w-full border-2 border-gray-200 rounded-xl py-3 px-4 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+              />
+            </div>
+
+            {/* Compétences */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700">
+                Compétences (optionnel)
+              </label>
+              <textarea
+                name="competences"
+                value={form.competences}
+                onChange={onChange}
+                placeholder="Décrivez vos compétences et expériences..."
+                rows="3"
+                className="w-full border-2 border-gray-200 rounded-xl py-3 px-4 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
+              />
+            </div>
+
+            {/* Upload CV */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                CV (optionnel)
+              </label>
+              <div className="relative">
+                <input
+                  id="cv-upload"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="cv-upload"
+                  className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-xl py-4 px-4 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all"
+                >
+                  <Upload className="w-5 h-5 text-gray-400" />
+                  <span className="text-sm text-gray-600">
+                    {cvFile ? cvFile.name : "Cliquez pour télécharger votre CV (PDF, DOC, DOCX)"}
+                  </span>
+                </label>
+              </div>
+              {cvFile && (
+                <div className="flex items-center gap-2 mt-2 p-2 bg-green-50 rounded-lg">
+                  <FileText className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-green-700">
+                    Fichier sélectionné: {cvFile.name}
+                  </span>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                Formats acceptés: PDF, DOC, DOCX (max 5MB)
+              </p>
+            </div>
+
             {/* Messages */}
             {message && (
               <div className="flex items-center gap-2 p-4 rounded-xl bg-green-50 text-green-700 border border-green-200">
@@ -247,9 +408,21 @@ const RegisterCandidat = () => {
             <button
               type="button"
               className="text-blue-600 hover:text-blue-700 font-semibold"
-              onClick={() => (window.location.href = "/login")}
+              onClick={() => navigate("/login")}
             >
               Se connecter
+            </button>
+          </div>
+
+          {/* Bouton Retour à l'accueil */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-xl transition-all duration-200 font-medium"
+            >
+              <Home className="w-4 h-4" />
+              Retour à l'accueil
             </button>
           </div>
         </div>

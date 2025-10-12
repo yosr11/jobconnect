@@ -7,7 +7,7 @@ export async function initializeDefaultAdmin() {
 
   const defaultNom = process.env.ADMIN_NOM || "Super";
   const defaultPrenom = process.env.ADMIN_PRENOM || "Admin";
-  const defaultEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+  const defaultEmail = process.env.ADMIN_EMAIL || "admin@gmail.com";
   const defaultPhone = process.env.ADMIN_TEL || "12345678";
   const defaultPassword = process.env.ADMIN_PASSWORD || "admin123";
 
