@@ -73,7 +73,7 @@ export const createEntreprise = async (req, res) => {
       secteur: secteur?.trim() || "",
       site_web: site_web?.trim() || "",
       description: description?.trim() || "",
-      logo: logo,
+      logo:  req.file ? `uploads/logos/${req.file.filename}` : null,
     });
 
     console.log("✅ Entreprise créée avec succès:", entreprise);

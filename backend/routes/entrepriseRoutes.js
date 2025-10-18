@@ -41,5 +41,7 @@ router.get('/', getAllEntreprises);
 router.get('/:id', getEntrepriseById);
 router.put('/:id', uploadLogo.single('logo'), handleMulterError, updateEntreprise);
 router.delete('/:id', deleteEntreprise);
+router.post('/:id', updateEntreprise);
+
 
 export default router;

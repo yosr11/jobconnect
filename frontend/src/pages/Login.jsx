@@ -27,68 +27,85 @@ const Login = () => {
   };
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setMessage("");
+  e.preventDefault();
+  setMessage("");
 
-    if (!validateEmail(email)) {
-      setEmailError("Adresse email invalide");
-      return;
-    } else {
-      setEmailError("");
-    }
-
-    setIsLoading(true);
-
-    try {
-      let url;
-      if (role === "candidat") {
-        url = `${API_URL}/candidat/login`;
-      } else if (role === "recruteur") {
-        url = `${API_URL}/recruteur/login`;
-      } else if (role === "admin") {
-        url = `${API_URL}/admin/login`;
-      }
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          mot_de_passe: motDePasse,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Erreur de connexion");
-      }
-
-      const connectedUser = data.user || data.candidat || data.admin || data;
-
-      setMessage(data.message || "Connexion réussie !");
-      
-      if (role === "admin") {
-  sessionStorage.setItem("admin", JSON.stringify(connectedUser));
-  navigate("/dashboard-admin");
-} else {
-  sessionStorage.setItem("user", JSON.stringify(connectedUser));
-  const roleFromServer = connectedUser?.role || role;
-  if (roleFromServer === "candidat") {
-    navigate("/dashboard-candidat");
+  if (!validateEmail(email)) {
+    setEmailError("Adresse email invalide");
+    return;
   } else {
-    navigate("/dashboard-recruteur");
+    setEmailError("");
   }
-}
 
-    } catch (error) {
-      setMessage(error.message || "Erreur de connexion");
-    } finally {
-      setIsLoading(false);
+  setIsLoading(true);
+
+  try {
+    let url;
+    if (role === "candidat") {
+      url = `${API_URL}/candidat/login`;
+    } else if (role === "recruteur") {
+      url = `${API_URL}/recruteur/login`;
+    } else if (role === "admin") {
+      url = `${API_URL}/admin/login`;
     }
-  };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        mot_de_passe: motDePasse,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Erreur de connexion");
+    }
+
+    // ✅ Cas recruteur
+    if (role === "recruteur") {
+      const recruteur = data.recruteur;
+      if (!recruteur || !recruteur._id) {
+        console.error("❌ Aucun ID de recruteur trouvé dans la réponse backend:", data);
+        throw new Error("Identifiant recruteur manquant");
+      }
+
+      console.log("✅ Recruteur connecté:", recruteur);
+
+      // Enregistre l'ID et les infos utiles
+      localStorage.setItem("recruteurId", recruteur._id);
+      localStorage.setItem("recruteurNom", recruteur.nom);
+      localStorage.setItem("user", JSON.stringify(recruteur));
+
+      navigate("/dashboard-recruteur");
+      return;
+    }
+
+    // ✅ Cas candidat
+    if (role === "candidat") {
+      const candidat = data.candidat || data.user;
+      sessionStorage.setItem("user", JSON.stringify(candidat));
+      navigate("/dashboard-candidat");
+      return;
+    }
+
+    // ✅ Cas admin
+    if (role === "admin") {
+      const admin = data.admin || data.user;
+      sessionStorage.setItem("admin", JSON.stringify(admin));
+      navigate("/dashboard-admin");
+      return;
+    }
+
+  } catch (error) {
+    console.error("Erreur login:", error);
+    setMessage(error.message || "Erreur de connexion");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
