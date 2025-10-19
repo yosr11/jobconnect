@@ -75,6 +75,7 @@ const Login = () => {
       console.log("✅ Recruteur connecté:", recruteur);
 
       // Enregistre l'ID et les infos utiles
+      
       localStorage.setItem("recruteurId", recruteur._id);
       localStorage.setItem("recruteurNom", recruteur.nom);
       localStorage.setItem("user", JSON.stringify(recruteur));
@@ -83,13 +84,23 @@ const Login = () => {
       return;
     }
 
+  
     // ✅ Cas candidat
-    if (role === "candidat") {
-      const candidat = data.candidat || data.user;
-      sessionStorage.setItem("user", JSON.stringify(candidat));
-      navigate("/dashboard-candidat");
-      return;
-    }
+if (role === "candidat") {
+  const candidat = data.candidat || data.user;
+  if (!candidat || !data.token) {
+    console.error("❌ Aucun token ou candidat dans la réponse backend:", data);
+    throw new Error("Token ou ID candidat manquant");
+  }
+
+  // Stockage du token et ID dans localStorage
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("candidatId", candidat.id); // ou _id selon ton backend
+  localStorage.setItem("user", JSON.stringify(candidat));
+
+  navigate("/dashboard-candidat");
+  return;
+}
 
     // ✅ Cas admin
     if (role === "admin") {
