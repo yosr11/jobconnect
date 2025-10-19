@@ -18,10 +18,18 @@ export const loginCandidat = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Mot de passe incorrect" });
     }
+    // 🔹 Générer le token
+    const token = jwt.sign(
+      { id: candidat._id, role: candidat.role, email: candidat.email },
+      process.env.JWT_SECRET || "dev_secret",
+      { expiresIn: "7d" }
+    );
+
 
 
     res.status(200).json({
       message: "Connexion réussie",
+      token, // <-- ici le token
       candidat: {
         id: candidat._id,
         nom: candidat.nom,
@@ -146,5 +154,44 @@ export const registerCandidat = async (req, res) => {
       message: "Erreur serveur lors de la création du compte", 
       error: error.message 
     });
+  }
+};
+// ✅ Récupérer le profil d'un candidat
+export const getCandidat = async (req, res) => {
+  try {
+    const candidat = await Candidat.findById(req.params.id).select('-mot_de_passe -confirmer_mot_de_passe');
+    if (!candidat) {
+      return res.status(404).json({ message: "Candidat non trouvé" });
+    }
+    res.status(200).json(candidat);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+// ✅ Mettre à jour le profil du candidat
+export const updateCandidat = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    // Si un fichier CV a été uploadé
+    if (req.file) {
+      updates.cv = req.file.path;
+    }
+
+    const updatedCandidat = await Candidat.findByIdAndUpdate(id, updates, { new: true })
+      .select('-mot_de_passe -confirmer_mot_de_passe');
+
+    if (!updatedCandidat) {
+      return res.status(404).json({ message: "Candidat non trouvé" });
+    }
+
+    res.status(200).json({
+      message: "Profil mis à jour avec succès",
+      candidat: updatedCandidat,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
