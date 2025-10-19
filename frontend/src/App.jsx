@@ -9,6 +9,7 @@ import DashboardCandidat from "./pages/DashboardCandidat";
 import DashboardRecruteur from "./pages/DashboardRecruteur";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Entreprise from "./pages/Entreprise";
+import Profil from "./pages/Profil";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         
         <Route path="/entreprise" element={<Entreprise />} />
         <Route path="/dashboard-recruteur" element={<DashboardRecruteur />} />
+        <Route path="/profil" element={<Profil />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

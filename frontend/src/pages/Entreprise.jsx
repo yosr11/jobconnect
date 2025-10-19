@@ -80,7 +80,7 @@ const Entreprise = () => {
               {editing ? (
                 <input type="file" name="logo" onChange={handleChange} />
               ) : (
-                <img src={`http://localhost:5000${entreprise.logo}`} alt={entreprise.nom} className="w-20 h-20"/>
+                <img src={`http://localhost:5000/${entreprise.logo.startsWith('/') ? entreprise.logo.slice(1) : entreprise.logo}`} alt={entreprise.nom} className="w-20 h-20"/>
               )}
             </div>
           </div>

@@ -40,6 +40,7 @@ router.post('/', uploadLogo.single('logo'), handleMulterError, createEntreprise)
 router.get('/', getAllEntreprises);
 router.get('/:id', getEntrepriseById);
 router.put('/:id', uploadLogo.single('logo'), handleMulterError, updateEntreprise);
+router.get('/:id', uploadLogo.single('logo'), handleMulterError, updateEntreprise);
 router.delete('/:id', deleteEntreprise);
 router.post('/:id', updateEntreprise);
 

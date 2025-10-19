@@ -1,5 +1,5 @@
 // src/layouts/DashboardLayout.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { 
   Search, Bell, User, Briefcase, Users, BarChart3, Settings, Menu, X, Target, MapPin 
@@ -10,7 +10,9 @@ const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [entreprise, setEntreprise] = useState({});
   const [user, setUser] = useState({});
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -24,6 +26,25 @@ const DashboardLayout = () => {
       setEntreprise(data.entreprise);
     };
     fetchEntreprise();
+  }, []);
+
+  // 🔒 Déconnexion
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
+  // 🔹 Ferme le menu si clic à l'extérieur
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const navigationItems = [
@@ -44,7 +65,7 @@ const DashboardLayout = () => {
               <div className="flex items-center space-x-3">
                 {entreprise.logo && (
                   <img
-                    src={`http://localhost:5000${entreprise.logo}`}
+                    src={`http://localhost:5000/${entreprise.logo.startsWith('/') ? entreprise.logo.slice(1) : entreprise.logo}`}
                     alt="logo"
                     className="w-12 h-12 rounded-xl shadow-lg"
                   />
@@ -88,6 +109,7 @@ const DashboardLayout = () => {
       {/* Contenu principal */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white/60 backdrop-blur-xl shadow-sm border-b border-white/20 px-8 py-4 flex justify-between items-center">
+          {/* Barre de recherche */}
           <div className="relative group w-1/3">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
@@ -97,16 +119,46 @@ const DashboardLayout = () => {
             />
           </div>
 
+          {/* Icônes à droite */}
           <div className="flex items-center gap-4">
+            {/* Notifications */}
             <button className="relative p-3 hover:bg-gray-50 rounded-xl">
               <Bell size={22} />
               <span className="absolute top-2 right-2 w-4 h-4 bg-blue-500 rounded-full text-white text-xs flex items-center justify-center">3</span>
             </button>
-            <div className="flex items-center gap-2 border-l pl-4">
-              <p className="text-sm text-gray-800 font-semibold">{user?.role || "Utilisateur"}</p>
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-500 rounded-xl flex items-center justify-center text-white">
-                <User size={18} />
-              </div>
+
+            {/* Profil utilisateur */}
+            <div className="relative border-l pl-4" ref={menuRef}>
+              <button
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="flex items-center gap-2 focus:outline-none"
+              >
+                <p className="text-sm text-gray-800 font-semibold">{user?.role || "Utilisateur"}</p>
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-800 to-blue-500 rounded-xl flex items-center justify-center text-white hover:opacity-90 transition">
+                  <User size={18} />
+                </div>
+              </button>
+
+              {/* Menu déroulant du profil */}
+              {profileMenuOpen && (
+                <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
+                  <button
+                    onClick={() => {
+                      navigate("/profil");
+                      setProfileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-blue-50 text-gray-700 flex items-center gap-2"
+                  >
+                    <User size={16} /> Mon Profil
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 flex items-center gap-2 border-t border-gray-100"
+                  >
+                    🔓 Se déconnecter
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

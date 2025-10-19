@@ -30,8 +30,11 @@ const DashboardRecruteur = () => {
 
         const response = await fetch(`http://localhost:5000/api/recruteur/entreprise/${recruteurId}`);
         if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+        
+
 
         const data = await response.json();
+        console.log("Logo reçu :", data.entreprise.logo); // ✅ ici
         setEntrepriseData(data.entreprise);
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
