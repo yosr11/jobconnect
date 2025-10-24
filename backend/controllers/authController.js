@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
-import Admin from "../models/admin.js"; // ❌ pas { Admin }
+import Admin from "../models/admin.js";
 
 import Candidat  from "../models/candidat.js";
 import  Recruteur from "../models/recruteur.js";

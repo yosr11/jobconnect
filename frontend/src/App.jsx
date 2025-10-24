@@ -10,8 +10,10 @@ import DashboardRecruteur from "./pages/DashboardRecruteur";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Entreprise from "./pages/Entreprise";
 import Profil from "./pages/Profil";
+import OffreEmploi from "./pages/OffreEmploi";
 
 export default function App() {
+  const token = localStorage.getItem("token");
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
@@ -29,6 +31,7 @@ export default function App() {
         <Route path="/entreprise" element={<Entreprise />} />
         <Route path="/dashboard-recruteur" element={<DashboardRecruteur />} />
         <Route path="/profil" element={<Profil />} />
+        <Route path="/offres" element={token ? <OffreEmploi /> : <Navigate to="/login" />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

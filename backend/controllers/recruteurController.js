@@ -6,8 +6,9 @@ import jwt from "jsonwebtoken";
 export const loginRecruteur = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
-    const recruteur = await Recruteur.findOne({ email });
 
+    // Vérifie que le recruteur existe
+    const recruteur = await Recruteur.findOne({ email });
     if (!recruteur) {
       return res.status(404).json({ message: "Recruteur non trouvé" });
     }
@@ -18,9 +19,21 @@ export const loginRecruteur = async (req, res) => {
       return res.status(401).json({ message: "Mot de passe incorrect" });
     }
 
-    // ✅ Réponse complète avec _id et infos du recruteur
+    // Génère le token JWT
+    const token = jwt.sign(
+      {
+        id: recruteur._id,
+        email: recruteur.email,
+        role: "recruteur"
+      },
+      process.env.JWT_SECRET || "dev_secret",
+      { expiresIn: "1h" } // token valide 1 heure
+    );
+
+    // Réponse avec token et infos du recruteur
     res.status(200).json({
       message: "Connexion réussie",
+      token, // le token JWT à utiliser pour les routes protégées
       recruteur: {
         _id: recruteur._id,
         nom: recruteur.nom,
@@ -34,7 +47,6 @@ export const loginRecruteur = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
-
 
 export const registerRecruteur = async (req, res) => {
   try {
