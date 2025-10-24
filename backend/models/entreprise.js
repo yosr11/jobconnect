@@ -2,64 +2,45 @@ import mongoose from "mongoose";
 
 const entrepriseSchema = new mongoose.Schema(
   {
-    nom: {
-      type: String,
-      required: [true, "Le nom de l'entreprise est obligatoire"],
-      unique: true,
-      trim: true,
-      minlength: [2, "Le nom doit contenir au moins 2 caractères"],
-      maxlength: [100, "Le nom ne peut pas dépasser 100 caractères"],
-    },
-    adresse: {
-      type: String,
-      required: false,
-      trim: true,
-      maxlength: [200, "L'adresse ne peut pas dépasser 200 caractères"],
-    },
-    secteur: {
-      type: String,
-      required: false,
-      trim: true,
-      maxlength: [50, "Le secteur ne peut pas dépasser 50 caractères"],
-    },
-    site_web: {
-      type: String,
-      required: false,
-      trim: true,
+    nom: { type: String, required: true, unique: true, trim: true, minlength: 2, maxlength: 100 },
+    adresse: { type: String, trim: true, maxlength: 200 },
+    secteur: { type: String, trim: true, maxlength: 50 },
+    site_web: { 
+      type: String, 
+      trim: true, 
       validate: {
-        validator: function(v) {
-          if (!v) return true; // Champ optionnel
-          return /^https?:\/\/.+/.test(v);
-        },
+        validator: function(v) { return !v || /^https?:\/\/.+/.test(v); },
         message: "Format d'URL invalide (doit commencer par http:// ou https://)"
       }
     },
-    description: {
-      type: String,
-      required: false,
+    description: { type: String, trim: true, maxlength: 500 },
+    logo: { type: String, trim: true, default: null },
+
+    // ⚡ Nouveaux champs
+    email: { 
+      type: String, 
       trim: true,
-      maxlength: [500, "La description ne peut pas dépasser 500 caractères"],
+      lowercase: true,
+      unique: true,
+      validate: {
+        validator: function(v) { return !v || /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v); },
+        message: "Format d'email invalide"
+      }
     },
-    logo: {
+    num_tel: {
       type: String,
-      required: false,
       trim: true,
-      default: null
+      validate: {
+        validator: function(v) { return !v || /^\d{8,15}$/.test(v); },
+        message: "Numéro de téléphone invalide (8 à 15 chiffres)"
+      }
     },
-    date_creation: {
-      type: Date,
-      default: Date.now,
-    },
+
+    date_creation: { type: Date, default: Date.now },
   },
-  { 
-    timestamps: true,
-    versionKey: false // Désactiver le champ __v
-  }
+  { timestamps: true, versionKey: false }
 );
 
-// Index pour améliorer les performances de recherche
-entrepriseSchema.index({ nom: 1 });
-entrepriseSchema.index({ secteur: 1 });
-
+// ⚡ Exporter le modèle par défaut
 const Entreprise = mongoose.model("Entreprise", entrepriseSchema);
 export default Entreprise;

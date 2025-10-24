@@ -15,6 +15,8 @@ const EntrepriseForm = ({
     secteur: initialData.secteur || "",
     site_web: initialData.site_web || "",
     description: initialData.description || "",
+    email: initialData.email || "",     // nouveau champ email
+  num_tel: initialData.num_tel || "", // nouveau champ num_tel
   });
 
   // États pour les messages et le chargement
@@ -52,6 +54,13 @@ const EntrepriseForm = ({
     if (nom.trim().length > 100) {
       return "Le nom de l'entreprise ne peut pas dépasser 100 caractères.";
     }
+if (!formData.email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) {
+  return "Email valide requis";
+}
+
+if (!formData.num_tel || !/^\d{8}$/.test(formData.num_tel)) {
+  return "Numéro de téléphone doit contenir exactement 8 chiffres";
+}
 
     // Validation du site web (optionnel)
     if (site_web && site_web.trim() !== "") {
@@ -101,6 +110,8 @@ const EntrepriseForm = ({
           secteur: "",
           site_web: "",
           description: "",
+          email: "",
+          num_tel: "",
         });
         
         // Appeler la fonction de callback avec la nouvelle entreprise
@@ -143,6 +154,8 @@ const EntrepriseForm = ({
       secteur: "",
       site_web: "",
       description: "",
+      email: "",
+      num_tel: "",
     });
     setMessage("");
     setError("");
@@ -248,6 +261,44 @@ const EntrepriseForm = ({
             </p>
           </div>
         </div>
+        {/* Email et Numéro de téléphone */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-2">
+      Email *
+    </label>
+    <input
+      type="email"
+      name="email"
+      value={formData.email}
+      onChange={handleChange}
+      placeholder="contact@entreprise.com"
+      className="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+      disabled={isLoading}
+    />
+    <p className="text-xs text-gray-500 mt-1">
+      Email valide requis
+    </p>
+  </div>
+
+  <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-2">
+      Numéro de téléphone *
+    </label>
+    <input
+      type="tel"
+      name="num_tel"
+      value={formData.num_tel}
+      onChange={handleChange}
+      placeholder="12345678"
+      className="w-full border-2 border-gray-200 rounded-lg py-3 px-4 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+      disabled={isLoading}
+    />
+    <p className="text-xs text-gray-500 mt-1">
+      8 chiffres requis
+    </p>
+  </div>
+</div>
 
         {/* Adresse */}
         <div>

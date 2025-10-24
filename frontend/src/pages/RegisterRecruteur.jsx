@@ -67,6 +67,8 @@ export default function RegisterRecruteur() {
     secteur: "",
     site_web: "",
     description: "",
+    email: "",
+  num_tel: "",
   });
 
   const [logoFile, setLogoFile] = useState(null);
@@ -184,6 +186,7 @@ export default function RegisterRecruteur() {
         return "L'URL doit commencer par http:// ou https://";
       }
     }
+ 
 
     return "";
   };
@@ -227,6 +230,9 @@ export default function RegisterRecruteur() {
       formData.append('secteur', entrepriseForm.secteur.trim());
       formData.append('site_web', entrepriseForm.site_web.trim());
       formData.append('description', entrepriseForm.description.trim());
+      formData.append('email', entrepriseForm.email.trim());
+formData.append('num_tel', entrepriseForm.num_tel.trim());
+
       
       if (logoFile) {
         formData.append('logo', logoFile);
@@ -283,6 +289,9 @@ export default function RegisterRecruteur() {
       const { data } = await api.post("/recruteur/register", recruteurForm);
       
       if (data.success) {
+         if (data.token) {
+    localStorage.setItem("token", data.token);
+  }
         setRecruteurMessage("Recruteur créé avec succès !");
         
         setRecruteurForm({
@@ -610,6 +619,37 @@ export default function RegisterRecruteur() {
                             />
                           </div>
                         </div>
+<div className="grid grid-cols-2 gap-2">
+  <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+    <div className="relative">
+      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <input
+        type="email"
+        name="email"
+        value={entrepriseForm.email}
+        onChange={onChangeEntreprise}
+        placeholder="contact@entreprise.com"
+        className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-sm"
+      />
+    </div>
+  </div>
+
+  <div>
+    <label className="block text-sm font-semibold text-gray-700 mb-1">Téléphone</label>
+    <div className="relative">
+      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <input
+        type="text"
+        name="num_tel"
+        value={entrepriseForm.num_tel}
+        onChange={onChangeEntreprise}
+        placeholder="Ex: 12345678"
+        className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-sm"
+      />
+    </div>
+  </div>
+</div>
 
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-1">
