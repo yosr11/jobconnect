@@ -6,6 +6,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import candidatRoutes from "./routes/candidatRoutes.js";
 import recruteurRoutes from "./routes/recruteurRoutes.js";
 import entrepriseRoutes from "./routes/entrepriseRoutes.js";
+import candidatureRoutes from "./routes/candidatureRoutes.js";
 import { initializeDefaultAdmin } from "./initAdmin.js";
 import authRoutes from "./routes/authRoutes.js";
 import offresRoutes from "./routes/offreRoutes.js";
@@ -42,6 +43,7 @@ app.use("/api/entreprises", entrepriseRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/offres", offresRoutes);
+app.use("/api/candidature", candidatureRoutes);
 app.get("/", (req, res) => res.send("API Recrutement intelligente fonctionne !"));
 
 const PORT = process.env.PORT || 5000;
