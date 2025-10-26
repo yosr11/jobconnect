@@ -1,5 +1,6 @@
+// src/pages/DashboardCandidat.jsx
 import React, { useEffect, useState } from "react";
-import { Mail, User, AlertCircle, Clock } from "lucide-react";
+import { AlertCircle, Clock } from "lucide-react";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -73,7 +74,7 @@ const DashboardCandidat = () => {
   const recentApplications = candidat.candidatures?.slice(-4).reverse() || [];
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100 p-8">
+    <div className="flex-1 flex flex-col overflow-hidden">
 
       {/* Bannière */}
       <div className="relative bg-gradient-to-r from-blue-900 via-blue-700 to-blue-500 rounded-3xl p-8 text-white mb-6 shadow-2xl overflow-hidden">
@@ -104,24 +105,25 @@ const DashboardCandidat = () => {
       </div>
 
       {/* Candidatures récentes */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Candidatures récentes</h2>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-800">Candidatures récentes</h2>
+        </div>
         <div className="divide-y divide-gray-100">
-          {recentApplications.length > 0 ? recentApplications.map((app, i) => (
-            <div key={i} className="p-4 hover:bg-blue-50 rounded-lg flex justify-between items-center transition">
+          {recentApplications.map((candidature, index) => (
+            <div key={index} className="p-6 hover:bg-blue-50 transition flex justify-between items-center">
               <div>
-                <p className="font-semibold text-gray-800">{app.poste}</p>
-                <p className="text-sm text-gray-500">{app.entreprise}</p>
+                <h3 className="font-semibold text-gray-800">{candidature.poste}</h3>
+                <p className="text-sm text-gray-500">{new Date(candidature.date).toLocaleDateString()}</p>
               </div>
-              <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
-                app.status === "Accepté" ? "bg-green-100 text-green-700" :
-                app.status === "En attente" ? "bg-yellow-100 text-yellow-700" :
-                "bg-blue-100 text-blue-700"
-              }`}>
-                {app.status}
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">
+                {candidature.status || "Nouveau"}
               </span>
             </div>
-          )) : <p className="text-gray-400">Aucune candidature récente</p>}
+          ))}
+          {recentApplications.length === 0 && (
+            <div className="p-6 text-gray-500 text-sm">Aucune candidature récente.</div>
+          )}
         </div>
       </div>
     </div>

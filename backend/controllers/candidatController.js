@@ -170,10 +170,20 @@ export const getCandidat = async (req, res) => {
 };
 
 // ✅ Mettre à jour le profil du candidat
+
+
 export const updateCandidat = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
+    const updates = { ...req.body };
+
+    // Hasher le mot de passe si présent
+    if (updates.mot_de_passe) {
+      const salt = await bcrypt.genSalt(10);
+      updates.mot_de_passe = await bcrypt.hash(updates.mot_de_passe, salt);
+    } else {
+      delete updates.mot_de_passe; // pour ne pas écraser si vide
+    }
 
     // Si un fichier CV a été uploadé
     if (req.file) {

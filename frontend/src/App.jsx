@@ -8,6 +8,9 @@ import DashboardAdmin from "./pages/DashboardAdmin";
 import DashboardCandidat from "./pages/DashboardCandidat";
 import DashboardRecruteur from "./pages/DashboardRecruteur";
 import DashboardLayout from "./layouts/DashboardLayout";
+import DashboardCandidatLayout from "./layouts/DashboardCandidatLayout";
+import AllOffresCandidat from  "./pages/AllOffresCandidat";
+import ProfilCandidat from "./pages/profilCandidat";
 import Entreprise from "./pages/Entreprise";
 import Profil from "./pages/Profil";
 import OffreEmploi from "./pages/OffreEmploi";
@@ -22,8 +25,24 @@ export default function App() {
       <Route path="/register-recruteur" element={<RegisterRecruteur />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dashboard-admin" element={<DashboardAdmin />} />
-      <Route path="/dashboard-candidat" element={<DashboardCandidat />} />
       
+       {/* Dashboard Candidat avec son layout */}
+        <Route element={<DashboardCandidatLayout />}>
+          <Route
+            path="/dashboard-candidat"
+            element={token ? <DashboardCandidat /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/AllOffresCandidat"
+            element={token ? <AllOffresCandidat /> : <Navigate to="/login" />}
+          />
+
+           <Route
+            path="/ProfilCandidat"
+            element={token ? <ProfilCandidat /> : <Navigate to="/login" />}
+          />
+          {/* Ici tu peux ajouter d'autres pages candidat */}
+        </Route>
 
       {/* Routes protégées sous le layout recruteur */}
       <Route element={<DashboardLayout />}>
