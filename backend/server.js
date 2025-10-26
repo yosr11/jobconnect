@@ -26,6 +26,13 @@ app.use(express.json());
 // Connexion MongoDB
 connectDB();
 initializeDefaultAdmin().catch((e) => console.error(e));
+// Définir le dossier uploads comme statique
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Exemple : route de test
+app.get('/', (req, res) => {
+  res.send('Serveur OK');
+});
 
 // Routes
 app.use("/api/admin", adminRoutes);

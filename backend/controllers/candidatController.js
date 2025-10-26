@@ -1,7 +1,7 @@
 import Candidat from "../models/candidat.js"; // ✅ le modèle commence par une majuscule
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
+import path from "path";
 export const loginCandidat = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
@@ -45,6 +45,8 @@ export const loginCandidat = async (req, res) => {
 
 export const registerCandidat = async (req, res) => {
   try {
+    //console.log("📝 Corps de la requête:", req.body);
+    //console.log("📎 Fichier uploadé:", req.file);
     const {
       nom,
       prenom,
@@ -106,8 +108,8 @@ export const registerCandidat = async (req, res) => {
       });
     }
 
-    // Récupérer le chemin du fichier CV uploadé
-    const cvPath = req.file ? req.file.path : null;
+// Récupérer seulement le chemin relatif depuis 'uploads/'
+const cvPath = req.file ? path.join('uploads/cv', req.file.filename) : null;
 
     // Hasher les mots de passe
     const salt = await bcrypt.genSalt(10);
@@ -187,8 +189,9 @@ export const updateCandidat = async (req, res) => {
 
     // Si un fichier CV a été uploadé
     if (req.file) {
-      updates.cv = req.file.path;
+        updates.cv = path.join('uploads/cv', req.file.filename);
     }
+
 
     const updatedCandidat = await Candidat.findByIdAndUpdate(id, updates, { new: true })
       .select('-mot_de_passe -confirmer_mot_de_passe');
