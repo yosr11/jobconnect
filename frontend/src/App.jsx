@@ -9,50 +9,71 @@ import DashboardCandidat from "./pages/DashboardCandidat";
 import DashboardRecruteur from "./pages/DashboardRecruteur";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardCandidatLayout from "./layouts/DashboardCandidatLayout";
-import AllOffresCandidat from  "./pages/AllOffresCandidat";
+import AllOffresCandidat from "./pages/AllOffresCandidat";
 import ProfilCandidat from "./pages/profilCandidat";
 import Entreprise from "./pages/Entreprise";
 import Profil from "./pages/Profil";
 import OffreEmploi from "./pages/OffreEmploi";
 
-export default function App() {
+// ⚡ Composant de protection des routes
+const ProtectedRoute = ({ children, requiredRole }) => {
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  console.log("🔒 Protection route - Token:", !!token, "| Role:", role);
+
+  if (!token) {
+    console.log("❌ Pas de token, redirection vers login");
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiredRole && role !== requiredRole) {
+    console.log(`❌ Role incorrect. Attendu: ${requiredRole}, Reçu: ${role}`);
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+export default function App() {
   return (
     <Routes>
+      {/* Routes publiques */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register-candidat" element={<RegisterCandidat />} />
       <Route path="/register-recruteur" element={<RegisterRecruteur />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dashboard-admin" element={<DashboardAdmin />} />
-      
-       {/* Dashboard Candidat avec son layout */}
-        <Route element={<DashboardCandidatLayout />}>
-          <Route
-            path="/dashboard-candidat"
-            element={token ? <DashboardCandidat /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/AllOffresCandidat"
-            element={token ? <AllOffresCandidat /> : <Navigate to="/login" />}
-          />
 
-           <Route
-            path="/ProfilCandidat"
-            element={token ? <ProfilCandidat /> : <Navigate to="/login" />}
-          />
-          {/* Ici tu peux ajouter d'autres pages candidat */}
-        </Route>
-
-      {/* Routes protégées sous le layout recruteur */}
-      <Route element={<DashboardLayout />}>
-        
-        <Route path="/entreprise" element={<Entreprise />} />
-        <Route path="/dashboard-recruteur" element={<DashboardRecruteur />} />
-        <Route path="/profil" element={<Profil />} />
-        <Route path="/offres" element={token ? <OffreEmploi /> : <Navigate to="/login" />} />
+      {/* Routes Candidat protégées */}
+      <Route
+        element={
+          <ProtectedRoute requiredRole="candidat">
+            <DashboardCandidatLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard-candidat" element={<DashboardCandidat />} />
+        <Route path="/AllOffresCandidat" element={<AllOffresCandidat />} />
+        <Route path="/ProfilCandidat" element={<ProfilCandidat />} />
       </Route>
 
+      {/* Routes Recruteur protégées */}
+      <Route
+        element={
+          <ProtectedRoute requiredRole="recruteur">
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard-recruteur" element={<DashboardRecruteur />} />
+        <Route path="/entreprise" element={<Entreprise />} />
+        <Route path="/profil" element={<Profil />} />
+        <Route path="/offres" element={<OffreEmploi />} />
+      </Route>
+
+      {/* Redirection par défaut */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

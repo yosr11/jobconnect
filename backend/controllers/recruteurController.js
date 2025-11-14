@@ -12,39 +12,64 @@ const deleteFile = (filePath) => {
   }
 };
 
-// LOGIN
 export const loginRecruteur = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
+
+    // 🔍 Chercher le recruteur SANS populate d'abord pour voir la donnée brute
     const recruteur = await Recruteur.findOne({ email });
-    if (!recruteur) return res.status(404).json({ message: "Recruteur non trouvé" });
+
+    console.log("📧 Recruteur trouvé:", recruteur?.email);
+    console.log("🏢 Entreprise (brute):", recruteur?.entreprise);
+
+    if (!recruteur) {
+      return res.status(404).json({ message: "Recruteur non trouvé" });
+    }
 
     const isMatch = await bcrypt.compare(mot_de_passe, recruteur.mot_de_passe);
-    if (!isMatch) return res.status(401).json({ message: "Mot de passe incorrect" });
+    if (!isMatch) {
+      return res.status(401).json({ message: "Mot de passe incorrect" });
+    }
 
+    // ⚡ Récupérer directement l'entrepriseId (c'est déjà un ObjectId)
+    const entrepriseId = recruteur.entreprise ? recruteur.entreprise.toString() : null;
+
+    console.log("🆔 EntrepriseId extrait:", entrepriseId);
+
+    // ⚡ Créer le token
     const token = jwt.sign(
-      { id: recruteur._id, email: recruteur.email, role: "recruteur" },
+      { 
+        id: recruteur._id.toString(),
+        email: recruteur.email,
+        role: recruteur.role,
+        entrepriseId
+      },
       process.env.JWT_SECRET || "dev_secret",
       { expiresIn: "1h" }
     );
 
+    // ⚡ Envoyer la réponse avec entrepriseId
     res.status(200).json({
       message: "Connexion réussie",
       token,
       recruteur: {
-        _id: recruteur._id,
+        _id: recruteur._id.toString(),
         nom: recruteur.nom,
         prenom: recruteur.prenom,
         email: recruteur.email,
         num_tel: recruteur.num_tel,
-        role: "recruteur",
-      },
+        role: recruteur.role,
+        entrepriseId  // ✅ Maintenant il sera présent
+      }
     });
+
   } catch (error) {
-    console.error("Erreur lors du login recruteur:", error);
+    console.error("❌ Erreur lors du login recruteur:", error);
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
+
+
 
 // REGISTER
 export const registerRecruteur = async (req, res) => {

@@ -22,6 +22,7 @@ const offreSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    entrepriseId: { type: mongoose.Schema.Types.ObjectId, ref: "Entreprise", required: true },
     date_debut: {
       type: Date,
       required: true,

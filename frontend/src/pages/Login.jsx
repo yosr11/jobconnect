@@ -64,41 +64,68 @@ const Login = () => {
       throw new Error(data.message || "Erreur de connexion");
     }
 
-    // ✅ Cas recruteur
-    if (role === "recruteur") {
-      const recruteur = data.recruteur;
-      if (!recruteur || !recruteur._id) {
-        console.error("❌ Aucun ID de recruteur trouvé dans la réponse backend:", data);
-        throw new Error("Identifiant recruteur manquant");
-      }
-
-      console.log("✅ Recruteur connecté:", recruteur);
-
-      // Enregistre l'ID et les infos utiles
-      
-      localStorage.setItem("recruteurId", recruteur._id);
-      localStorage.setItem("recruteurNom", recruteur.nom);
-      localStorage.setItem("user", JSON.stringify(recruteur));
-
-      navigate("/dashboard-recruteur");
-      return;
-    }
-
+    // ✅ Cas recruteur - VERSION CORRIGÉE
+if (role === "recruteur") {
+  const recruteur = data.recruteur;
   
-    // ✅ Cas candidat
+  // Vérification des données reçues
+  if (!recruteur || !recruteur._id || !data.token) {
+    console.error("❌ Données manquantes dans la réponse:", data);
+    throw new Error("Identifiant recruteur ou token manquant");
+  }
+
+  console.log("✅ Recruteur connecté:", recruteur);
+  console.log("✅ Token reçu:", data.token);
+  console.log("✅ EntrepriseId:", recruteur.entrepriseId);
+
+  // ⚡ STOCKAGE COMPLET - TRÈS IMPORTANT
+  localStorage.setItem("token", data.token);                    // ← Token JWT
+  localStorage.setItem("role", "recruteur");                    // ← Rôle
+  localStorage.setItem("recruteurId", recruteur._id);           // ← ID du recruteur
+  localStorage.setItem("recruteurNom", recruteur.nom);          // ← Nom
+  localStorage.setItem("recruteurPrenom", recruteur.prenom);    // ← Prénom
+  localStorage.setItem("recruteurEmail", recruteur.email);      // ← Email
+  localStorage.setItem("entrepriseId", recruteur.entrepriseId); // ← ID entreprise
+  localStorage.setItem("user", JSON.stringify(recruteur));      // ← Objet complet
+
+  console.log("✅ Données stockées dans localStorage");
+
+  // Redirection
+  navigate("/dashboard-recruteur");
+  return;
+}
+  
+    // ✅ Cas candidat - VERSION CORRIGÉE
 if (role === "candidat") {
   const candidat = data.candidat || data.user;
+  
   if (!candidat || !data.token) {
-    console.error("❌ Aucun token ou candidat dans la réponse backend:", data);
+    console.error("❌ Token ou candidat manquant:", data);
     throw new Error("Token ou ID candidat manquant");
   }
 
-  // Stockage du token et ID dans localStorage
+  console.log("✅ Connexion candidat réussie");
+  console.log("- Token:", data.token);
+  console.log("- Candidat:", candidat);
+
+  // ⚡ IMPORTANT : Nettoyer le localStorage d'abord
+  localStorage.clear();
+  
+  // ⚡ Stockage complet avec le ROLE
   localStorage.setItem("token", data.token);
-  localStorage.setItem("candidatId", candidat.id); // ou _id selon ton backend
+  localStorage.setItem("role", "candidat"); // ← CETTE LIGNE EST CRUCIALE !
+  localStorage.setItem("candidatId", candidat._id || candidat.id);
+  localStorage.setItem("candidatNom", candidat.nom);
+  localStorage.setItem("candidatPrenom", candidat.prenom);
+  localStorage.setItem("candidatEmail", candidat.email);
   localStorage.setItem("user", JSON.stringify(candidat));
 
-  navigate("/dashboard-candidat");
+  console.log("✅ Stockage terminé, redirection...");
+
+  setTimeout(() => {
+    navigate("/dashboard-candidat");
+  }, 100);
+  
   return;
 }
 

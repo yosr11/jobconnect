@@ -7,11 +7,13 @@ const Entreprise = () => {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    nom: "",
+     nom: "",
     adresse: "",
     secteur: "",
     site_web: "",
     description: "",
+    email: "",
+    num_tel: "",
     logo: null,
   });
 
@@ -29,6 +31,7 @@ const Entreprise = () => {
           secteur: res.data.entreprise.secteur,
           site_web: res.data.entreprise.site_web,
           description: res.data.entreprise.description,
+          num_tel: res.data.entreprise.num_tel ,
           logo: null,
         });
       } catch (error) {
@@ -143,7 +146,7 @@ const Entreprise = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Téléphone</p>
-                <p className="font-semibold text-gray-800">{entreprise.telephone}</p>
+                <p className="font-semibold text-gray-800">{entreprise.num_tel}</p>
               </div>
             </div>
 

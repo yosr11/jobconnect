@@ -1,12 +1,33 @@
 import Offre from "../models/offre.js";
 
-// ➕ Ajouter une offre
+// ➕ Ajouter une offre (Recruteur)
 export const ajouterOffre = async (req, res) => {
   try {
-    const offre = new Offre(req.body);
+    // ⚡ Récupérer l'entrepriseId depuis le JWT (pas du body !)
+    const entrepriseId = req.user.entrepriseId;
+
+    console.log("🏢 EntrepriseId du recruteur:", entrepriseId);
+
+    if (!entrepriseId) {
+      return res.status(400).json({ message: "Aucune entreprise associée à ce recruteur" });
+    }
+
+    // ⚡ Créer l'offre avec l'entrepriseId du recruteur connecté
+    const offre = new Offre({
+      ...req.body,
+      entrepriseId  // ← Toujours prendre l'ID depuis le JWT, pas le body !
+    });
+
     await offre.save();
-    res.status(201).json({ message: "Offre ajoutée avec succès", offre });
+
+    console.log("✅ Offre créée:", offre);
+
+    res.status(201).json({ 
+      message: "Offre ajoutée avec succès", 
+      offre 
+    });
   } catch (err) {
+    console.error("❌ Erreur ajout offre:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -55,6 +76,16 @@ export const getOffreById = async (req, res) => {
   }
 };
 
+// 👀 Récupérer toutes les offres pour un recruteur (protéger)
+export const getOffresRecruteur = async (req, res) => {
+  try {
+    const recruteurEntrepriseId = req.user.entrepriseId; // défini dans le middleware JWT
+    const offres = await Offre.find({ entrepriseId: recruteurEntrepriseId }).sort({ createdAt: -1 });
+    res.json(offres);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 // 📅 Consulter les offres valides (avant la deadline)
 export const getOffresValides = async (req, res) => {
   try {

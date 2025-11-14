@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import Recruteur from "../models/recruteur.js";
 
 export const authMiddleware = (req, res, next) => {
   try {
