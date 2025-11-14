@@ -37,6 +37,9 @@ const recruteurSchema = new mongoose.Schema(
       type: String,
       default: "recruteur" ,
     },
+    etat: { type: String, enum: ["pending", "accepted", "rejected"], default: "pending" },
+role: { type: String, enum: ["candidat", "recruteur", "admin"], required: true },
+
     entreprise: { type: mongoose.Schema.Types.ObjectId, ref: "Entreprise" }
   },
   { timestamps: true }

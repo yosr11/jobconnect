@@ -54,6 +54,9 @@ const candidatSchema = new mongoose.Schema(
     required: false,
     trim: true,
   },
+  etat: { type: String, enum: ["pending", "accepted", "rejected"], default: "pending" },
+  role: { type: String, enum: ["candidat", "recruteur", "admin"], required: true }
+
   },
   { timestamps: true }
 );

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import Recruteur from "../models/recruteur.js";
+import Admin from "../models/admin.js";
 
 export const authMiddleware = (req, res, next) => {
   try {
@@ -16,6 +17,17 @@ export const authMiddleware = (req, res, next) => {
     next();
   } catch (error) {
     return res.status(401).json({ message: "Token invalide ou expiré" });
+  }
+};
+// 🔥 Vérifier si l'utilisateur est ADMIN
+export const isAdmin = async (req, res, next) => {
+  try {
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Accès refusé. Admin uniquement." });
+    }
+    next();
+  } catch (err) {
+    return res.status(500).json({ message: "Erreur serveur" });
   }
 };
 
