@@ -53,11 +53,20 @@ export const ajouterCandidature = async (req, res) => {
 export const getAllCandidatures = async (req, res) => {
   try {
     const candidatures = await Candidature.find()
-      .populate("id_offre", "titre description")
-      .populate("id_candidat", "nom prenom email");
-
-    res.status(200).json(candidatures);
+      .populate("id_candidat", "nom prenom email")  // ✅ Sélectionnez les champs nécessaires
+      .populate({
+        path: "id_offre",
+        select: "titre entrepriseId recruteur",  // ✅ Sélectionnez les champs
+        populate: [
+          { path: "entrepriseId", select: "nom" },
+          { path: "recruteur", select: "nom" }
+        ]
+      })
+      .sort({ createdAt: -1 });  // ✅ Maintenant createdAt existe
+    
+    res.json(candidatures);
   } catch (error) {
+    console.error("❌ Erreur candidatures:", error);  // ✅ Ajoutez un log
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };

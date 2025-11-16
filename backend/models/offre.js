@@ -27,6 +27,7 @@ const offreSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+   //etat: { type: String, enum: ["pending", "active", "rejected", "expired"], default: "pending" },
     date_limite: {
       type: Date,
       required: true,

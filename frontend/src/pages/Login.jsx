@@ -132,6 +132,9 @@ if (role === "candidat") {
     // ✅ Cas admin
     if (role === "admin") {
       const admin = data.admin || data.user;
+       
+  // ✅ SAUVEGARDER LE TOKEN (c'est ça qui manquait !)
+  localStorage.setItem("token", data.token);
       sessionStorage.setItem("admin", JSON.stringify(admin));
       navigate("/dashboard-admin");
       return;
