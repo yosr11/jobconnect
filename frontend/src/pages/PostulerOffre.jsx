@@ -112,7 +112,7 @@ const PostulerOffre = () => {
       if (!response.ok) throw new Error(data.message || 'Erreur lors de la candidature');
 
       alert('🎉 Candidature envoyée avec succès !');
-      navigate('/candidat/offres');
+      //navigate('/AllOffresCandidat');
     } catch (error) {
       console.error(error);
       alert('❌ ' + error.message);
