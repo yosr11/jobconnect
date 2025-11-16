@@ -11,9 +11,11 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardCandidatLayout from "./layouts/DashboardCandidatLayout";
 import AllOffresCandidat from "./pages/AllOffresCandidat";
 import ProfilCandidat from "./pages/profilCandidat";
+import PostulerOffre from "./pages/PostulerOffre";
 import Entreprise from "./pages/Entreprise";
 import Profil from "./pages/Profil";
 import OffreEmploi from "./pages/OffreEmploi";
+import MesCandidatures from "./pages/MesCandidatures";
 
 // ⚡ Composant de protection des routes
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -45,6 +47,7 @@ export default function App() {
       <Route path="/register-recruteur" element={<RegisterRecruteur />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dashboard-admin" element={<DashboardAdmin />} />
+      <Route path="/candidat/mes-candidatures" element={<MesCandidatures />} />
 
       {/* Routes Candidat protégées */}
       <Route
@@ -57,6 +60,7 @@ export default function App() {
         <Route path="/dashboard-candidat" element={<DashboardCandidat />} />
         <Route path="/AllOffresCandidat" element={<AllOffresCandidat />} />
         <Route path="/ProfilCandidat" element={<ProfilCandidat />} />
+        <Route path="/candidat/postuler/:offreId" element={<PostulerOffre />} />
       </Route>
 
       {/* Routes Recruteur protégées */}

@@ -1,14 +1,16 @@
-// src/pages/AllOffresCandidat.jsx
+// src/pages/AllOffresCandidat.jsx - VERSION COMPLETE UPDATED
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // ⭐ AJOUTE HEDHA
 import { Briefcase, Eye, Calendar, Clock, Building2, Award, Send } from "lucide-react";
 
 const API_URL = "http://localhost:5000/api";
 
 const AllOffresCandidat = () => {
+  const navigate = useNavigate(); // ⭐ AJOUTE HEDHA
+  
   const [offres, setOffres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [loadingPostuler, setLoadingPostuler] = useState({});
 
   const fetchOffres = async () => {
     try {
@@ -40,31 +42,9 @@ const AllOffresCandidat = () => {
     }
   };
 
-  const handlePostuler = async (offreId) => {
-    setLoadingPostuler(prev => ({ ...prev, [offreId]: true }));
-    
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/offres/${offreId}/postuler`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.message || "Erreur lors de la candidature");
-
-      alert("Candidature envoyée avec succès ! 🎉");
-      fetchOffres(); // Refresh pour mettre à jour le nombre de candidatures
-    } catch (error) {
-      console.error(error);
-      alert(error.message);
-    } finally {
-      setLoadingPostuler(prev => ({ ...prev, [offreId]: false }));
-    }
+  // ⭐ BADDEL EL FONCTION HEDHI - Navigation simple
+  const handlePostuler = (offreId) => {
+    navigate(`/candidat/postuler/${offreId}`);
   };
 
   const formatDate = (dateString) => {
@@ -210,27 +190,20 @@ const AllOffresCandidat = () => {
                         </span>
                       </div>
 
-                      {/* Bouton Postuler */}
+                      {/* ⭐ BOUTON POSTULER - UPDATED */}
                       <button
                         onClick={() => handlePostuler(offre._id)}
-                        disabled={loadingPostuler[offre._id] || daysLeft <= 0}
+                        disabled={daysLeft <= 0}
                         className={`
                           flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-sm
                           transition-all duration-200 shadow-sm
                           ${daysLeft <= 0
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : loadingPostuler[offre._id]
-                            ? 'bg-blue-400 text-white cursor-wait'
                             : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95'
                           }
                         `}
                       >
-                        {loadingPostuler[offre._id] ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Envoi...
-                          </>
-                        ) : daysLeft <= 0 ? (
+                        {daysLeft <= 0 ? (
                           'Expiré'
                         ) : (
                           <>

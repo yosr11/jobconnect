@@ -4,6 +4,9 @@ import Candidat from "../models/candidat.js";
 
 // ➕ Ajouter une candidature (postuler)
 export const ajouterCandidature = async (req, res) => {
+  console.log("📥 Body reçu:", req.body);
+  console.log("📎 Fichier reçu:", req.file);
+
   try {
     const { id_offre, id_candidat, score } = req.body;
 
@@ -14,10 +17,13 @@ export const ajouterCandidature = async (req, res) => {
     if (!offre) return res.status(404).json({ message: "Offre non trouvée" });
     if (!candidat) return res.status(404).json({ message: "Candidat non trouvé" });
 
-    // Vérifier si le candidat a déjà postulé à cette offre
+    // Vérifier si candidature existe déjà
     const existe = await Candidature.findOne({ id_offre, id_candidat });
     if (existe)
       return res.status(400).json({ message: "Candidature déjà existante pour cette offre" });
+
+    // Récupérer le chemin du fichier
+    const lettre_motivation_fichier = req.file ? req.file.path : null;
 
     // Créer la candidature
     const candidature = new Candidature({
@@ -26,15 +32,19 @@ export const ajouterCandidature = async (req, res) => {
       score: score || 0,
       date_postulation: new Date(),
       etat: "en attente",
+      lettre_motivation_fichier,
     });
 
     await candidature.save();
+
+    console.log("✅ Candidature créée:", candidature);
 
     res.status(201).json({
       message: "Candidature ajoutée avec succès",
       candidature,
     });
   } catch (error) {
+    console.error("❌ Erreur:", error);
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
@@ -52,37 +62,44 @@ export const getAllCandidatures = async (req, res) => {
   }
 };
 
-// 🔍 Obtenir les candidatures d’un candidat spécifique
+// 📋 Récupérer les candidatures d'un candidat spécifique
 export const getCandidaturesByCandidat = async (req, res) => {
   try {
+    // ✅ CORRECTION ICI : utiliser id_candidat au lieu de candidatId
     const { id_candidat } = req.params;
-    const candidatures = await Candidature.find({ id_candidat })
-      .populate("id_offre", "titre description");
 
-    res.status(200).json(candidatures);
+    console.log("🔍 Recherche des candidatures pour candidat ID:", id_candidat);
+
+    const candidatures = await Candidature.find({ id_candidat })
+      .populate("id_offre", "titre nom_entreprise description date_debut niveau")
+      .sort({ date_postulation: -1 });
+
+    console.log(`✅ ${candidatures.length} candidature(s) trouvée(s)`);
+
+    res.status(200).json({
+      message: "Candidatures du candidat récupérées avec succès",
+      count: candidatures.length,
+      candidatures,
+    });
   } catch (error) {
+    console.error("❌ Erreur:", error);
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
 
-// ✏️ Mettre à jour l’état d’une candidature (par admin ou recruteur)
-export const updateEtatCandidature = async (req, res) => {
+// 🗑️ Supprimer une candidature
+export const deleteCandidature = async (req, res) => {
   try {
     const { id } = req.params;
-    const { etat } = req.body;
 
-    const candidature = await Candidature.findByIdAndUpdate(
-      id,
-      { etat },
-      { new: true }
-    );
+    const candidature = await Candidature.findByIdAndDelete(id);
 
     if (!candidature) {
       return res.status(404).json({ message: "Candidature non trouvée" });
     }
 
     res.status(200).json({
-      message: "État de la candidature mis à jour avec succès",
+      message: "Candidature supprimée avec succès",
       candidature,
     });
   } catch (error) {

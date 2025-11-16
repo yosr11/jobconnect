@@ -13,8 +13,9 @@ loginAdmin ,
   rejectOffer,
   deleteOffer,
   getStats
-} from "../controllers/adminController.js";
-import { getNotifications } from "../controllers/adminController.js";
+} 
+from "../controllers/adminController.js";
+//import { getNotifications } from "../controllers/adminController.js";
 
 const router = express.Router();
 
@@ -39,6 +40,6 @@ router.delete("/offres/:id/delete", authMiddleware, isAdmin, deleteOffer);
 // Statistiques
 router.get("/stats", authMiddleware, isAdmin, getStats);
 
-router.get("/notifications", authMiddleware, isAdmin, getNotifications);
+//router.get("/notifications", authMiddleware, isAdmin, getNotifications);
 
 export default router;

@@ -3,15 +3,23 @@ import {
   ajouterCandidature,
   getAllCandidatures,
   getCandidaturesByCandidat,
-  updateEtatCandidature,
+  deleteCandidature
 } from "../controllers/candidatureController.js";
+import { uploadLettreMotivation } from "../middleware/upload.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", ajouterCandidature);
-router.get("/", getAllCandidatures);
-router.get("/candidat/:id_candidat", getCandidaturesByCandidat);
+// Ajouter une candidature
+router.post("/", authMiddleware, uploadLettreMotivation, ajouterCandidature);
 
-//router.put("/:id", updateEtatCandidature);
+// ✅ CORRECTION : id_candidat au lieu de :id_candidat pour matcher le controller
+router.get("/candidat/:id_candidat", authMiddleware, getCandidaturesByCandidat);
+
+// Supprimer une candidature
+router.delete("/:id", authMiddleware, deleteCandidature);
+
+// Obtenir toutes les candidatures (admin)
+router.get("/", authMiddleware, getAllCandidatures);
 
 export default router;

@@ -1,5 +1,5 @@
 import Offre from "../models/offre.js";
-import Notification from "../models/Notification.js";
+//import Notification from "../models/Notification.js";
 
 // ➕ Ajouter une offre (Recruteur)
 export const ajouterOffre = async (req, res) => {
@@ -98,12 +98,12 @@ export const getOffresValides = async (req, res) => {
   }
 };
 // Après avoir créé l'offre
-const offre = await Offre.create(req.body);
+//const offre = await Offre.create(req.body);
 
 // Créer une notification pour admin
-await Notification.create({
+/*await Notification.create({
   type: "offre",
   message: `Nouvelle offre publiée : ${offre.titre} par ${offre.recruteur}`
-});
+});*/
 
-res.status(201).json({ message: "Offre ajoutée avec succès", offre });
+//res.status(201).json({ message: "Offre ajoutée avec succès", offre });

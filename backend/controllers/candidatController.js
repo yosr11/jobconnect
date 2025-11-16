@@ -2,7 +2,7 @@ import Candidat from "../models/candidat.js"; // ✅ le modèle commence par une
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import path from "path";
-import Notification from "../models/Notification.js";
+//import Notification from "../models/Notification.js";
 export const loginCandidat = async (req, res) => {
   try {
     const { email, mot_de_passe } = req.body;
@@ -210,12 +210,12 @@ export const updateCandidat = async (req, res) => {
   }
 };
 // Après avoir créé le candidat
-const candidat = await Candidat.create(req.body);
+//const candidat = await Candidat.create(req.body);
 
 // Créer une notification pour admin
-await Notification.create({
+/*await Notification.create({
   type: "candidat",
   message: `Nouveau candidat inscrit : ${candidat.nom} ${candidat.prenom}`
-});
+});*/
 
-res.status(201).json({ message: "Candidat créé avec succès", candidat });
+//res.status(201).json({ message: "Candidat créé avec succès", candidat });

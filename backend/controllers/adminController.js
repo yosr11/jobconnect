@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import Candidat from "../models/candidat.js";
 import Recruteur from "../models/recruteur.js";
 import Offre from "../models/offre.js";
-import Notification from "../models/Notification.js";
+//import Notification from "../models/Notifications.js";
 
 export const loginAdmin = async (req, res) => {
   try {
@@ -117,12 +117,12 @@ export const getStats = async (req, res) => {
   });
 };
 
-export const getNotifications = async (req, res) => {
+/*export const getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find().sort({ createdAt: -1 });
     res.status(200).json(notifications);
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
-};
+};*/
 // admin registration is intentionally disabled; admin is initialized automatically

@@ -24,6 +24,9 @@ const candidatureSchema = new mongoose.Schema({
     enum: ["en attente", "accepte", "refuse", "entretien"],
     default: "en attente",
   },
+  lettre_motivation_fichier: {
+    type: String, // URL ou chemin du fichier
+  },
 });
 
 const Candidature = mongoose.model("Candidature", candidatureSchema);

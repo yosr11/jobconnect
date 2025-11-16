@@ -38,8 +38,10 @@ const DashboardCandidatLayout = () => {
   const navigationItems = [
     { id: "accueil", label: "Tableau de bord", route: "/dashboard-candidat" },
     { id: "offres", label: "Offres d'emploi", route: "/AllOffresCandidat" },
-    { id: "candidatures", label: "Mes candidatures", route: "/candidatures" },
+    { id: "candidatures", label: "Mes candidatures", route: "/candidat/mes-candidatures" },
     { id: "profil", label: "Profil", route: "/ProfilCandidat" },
+    
+    
   ];
 
   return (
